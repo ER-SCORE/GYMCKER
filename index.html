@@ -424,7 +424,7 @@ async function getDayState(day){
   if(dayCache[day]) return dayCache[day];
   let state = {};
   try{
-    const r = await storageAPI.get(liveKey(day), false);
+    const r = await storageAPI.get(liveKey(day));
     if(r && r.value) state = JSON.parse(r.value);
   }catch(e){ /* nessun dato salvato ancora per questo giorno */ }
   dayCache[day] = state;
@@ -454,7 +454,7 @@ function scheduleSave(day){
 
 async function flushSave(day){
   try{
-    await storageAPI.set(liveKey(day), JSON.stringify(dayCache[day] || {}), false);
+    await storageAPI.set(liveKey(day), JSON.stringify(dayCache[day] || {}));
     flashSaved();
   }catch(e){
     console.error("storage error", e);
@@ -480,7 +480,7 @@ async function loadHistory(){
   if(historyCache) return historyCache;
   let history = [];
   try{
-    const r = await storageAPI.get(HISTORY_KEY, false);
+    const r = await storageAPI.get(HISTORY_KEY);
     if(r && r.value){
       const parsed = JSON.parse(r.value);
       if(Array.isArray(parsed)) history = parsed;
@@ -492,7 +492,7 @@ async function loadHistory(){
 
 async function saveHistory(records){
   try{
-    await storageAPI.set(HISTORY_KEY, JSON.stringify(records), false);
+    await storageAPI.set(HISTORY_KEY, JSON.stringify(records));
     historyCache = records;
     return true;
   }catch(e){
