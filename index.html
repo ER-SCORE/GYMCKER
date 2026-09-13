@@ -722,16 +722,6 @@ async function renderDay(){
   mainEl.appendChild(meta);
 }
 
-function allExercisesFlat(){
-  const list = [];
-  for(const dayKey of Object.keys(DAYS)){
-    for(const ex of DAYS[dayKey].exercises){
-      list.push({ dayKey, name: ex.name, unit: ex.unit });
-    }
-  }
-  return list;
-}
-
 // Per ogni sessione salvata (stessa data) dell'esercizio scelto, prende il peso massimo
 // tra tutte le serie di quella sessione: è l'indicatore più diretto di progresso.
 function buildProgressPoints(history, dayKey, exName){
