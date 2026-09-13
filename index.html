@@ -462,10 +462,26 @@ async function flushSave(day){
 }
 
 let saveTimeout = null;
+const SAVEBAR_DEFAULT = '<span class="dot">●</span> salvato automaticamente';
+
 function flashSaved(){
+  savebarEl.innerHTML = SAVEBAR_DEFAULT;
+  savebarEl.style.color = "";
   savebarEl.style.opacity = "1";
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(()=>{ savebarEl.style.opacity = "0.55"; }, 900);
+}
+
+function flashSaveError(){
+  savebarEl.innerHTML = '⚠️ salvataggio non riuscito';
+  savebarEl.style.color = "#ff6b7a";
+  savebarEl.style.opacity = "1";
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{
+    savebarEl.innerHTML = SAVEBAR_DEFAULT;
+    savebarEl.style.color = "";
+    savebarEl.style.opacity = "0.55";
+  }, 4000);
 }
 
 function showToast(msg){
