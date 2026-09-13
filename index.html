@@ -404,10 +404,7 @@ const mainEl = document.getElementById("main");
 const savebarEl = document.getElementById("savebar");
 const toastEl = document.getElementById("toast");
 
-function goTo(day){
-  currentDay = day;
-  renderCurrent();
-}
+
 
 function renderCurrent(){
   document.body.classList.toggle("screen-minimal", currentDay === "HOME" || currentDay === "PICKER");
