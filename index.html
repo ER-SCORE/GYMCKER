@@ -407,7 +407,6 @@ const toastEl = document.getElementById("toast");
 
 
 function renderCurrent(){
-  document.body.classList.toggle("screen-minimal", currentDay === "HOME" || currentDay === "PICKER");
   if(currentDay === "HOME") return renderHome();
   if(currentDay === "PICKER") return renderPicker();
   if(currentDay === "STATS") return renderAnalysis();
