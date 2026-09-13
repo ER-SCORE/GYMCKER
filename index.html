@@ -520,6 +520,7 @@ async function saveTodaySession(){
       for(let s = 1; s <= ex.sets; s++){
         const kg = (state[ex.id] && state[ex.id][s] && state[ex.id][s].kg) || "";
         const reps = (state[ex.id] && state[ex.id][s] && state[ex.id][s].reps) || "";
+        if(kg === "" && reps === "") continue;
         newRecords.push({
           date: isoDate,
           dateDisplay: dateStr,
