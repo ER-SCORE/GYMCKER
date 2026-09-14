@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#040507">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>APM-HSPC · Performance Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#040507;--obsidian:#090b10;--gun:#12161f;--gun2:#1b2029;
+  --panel:rgba(18,22,31,.72);--panel2:rgba(10,13,20,.82);
+  --white:#f1f5f9;--text:#e3e2e6;--muted:#94a3b8;--dim:#64748b;
+  --cyan:#00e5ff;--ice:#38bdf8;--blue:#0070f3;--line:#3b494c;
+  --danger:#ff6b7a;--success:#6ee7b7;
+  --r:12px;--r2:16px;
+}
+*{box-sizing:border-box}
+html{background:var(--void);scroll-behavior:smooth}
+body{margin:0;background:
+ radial-gradient(900px 500px at 15% -10%,rgba(0,112,243,.14),transparent 60%),
+ radial-gradient(700px 450px at 100% 10%,rgba(0,229,255,.07),transparent 60%),
+ linear-gradient(180deg,#040507,#080a0f 48%,#040507);
+ color:var(--text);font-family:"Space Grotesk",sans-serif;min-height:100vh}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:
+ linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+ background-size:32px 32px;
+ -webkit-mask-image:linear-gradient(to bottom,#000,transparent 85%);
+ mask-image:linear-gradient(to bottom,#000,transparent 85%);
+ opacity:.35}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1240px;margin:auto;padding:18px 24px 96px}
+.topbar{height:64px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:38px;height:38px;border:1px solid rgba(248,250,252,.35);border-radius:10px;background:linear-gradient(145deg,#343b46,#0b0e14);display:grid;place-items:center;box-shadow:inset 0 1px rgba(255,255,255,.3),0 0 18px rgba(0,229,255,.08)}
+.brand-mark span{font-family:"JetBrains Mono";font-size:13px;font-weight:700;color:var(--cyan)}
+.brand-name{font-weight:700;letter-spacing:.05em}.brand-sub{font:10px "JetBrains Mono";color:var(--dim);letter-spacing:.12em;margin-top:2px}
+.status{font:10px "JetBrains Mono";letter-spacing:.1em;color:var(--muted);display:flex;align-items:center;gap:7px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 9px var(--cyan)}
+.screen{display:none;animation:appear .22s ease}.screen.active{display:block}
+@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.panel{position:relative;background:linear-gradient(145deg,rgba(31,36,45,.78),rgba(9,11,16,.78));border:1px solid rgba(148,163,184,.18);border-radius:var(--r2);box-shadow:inset 0 1px rgba(248,250,252,.16),inset 0 -1px rgba(0,0,0,.65),0 18px 55px rgba(0,0,0,.28);overflow:hidden;-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+.panel:after{content:"";position:absolute;left:8%;right:8%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);pointer-events:none}
+.panel-pad{padding:22px}
+.eyebrow,.micro{font:10px "JetBrains Mono";letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.035em;margin:8px 0 12px}
+h2{font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:5px 0}
+h3{font-size:18px;margin-bottom:5px}
+.lead{color:var(--muted);max-width:620px;line-height:1.6}
+.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.hero{display:grid;grid-template-columns:1.35fr .65fr;gap:14px;margin-bottom:14px}
+.hero-main{min-height:265px;display:flex;flex-direction:column;justify-content:space-between}
+.telemetry{display:flex;gap:8px;flex-wrap:wrap}.chip{font:10px "JetBrains Mono";letter-spacing:.06em;border:1px solid rgba(148,163,184,.18);background:rgba(4,5,7,.48);padding:7px 9px;border-radius:6px;color:var(--muted)}.chip.active{color:var(--cyan);border-color:rgba(0,229,255,.35);box-shadow:0 0 15px rgba(0,229,255,.07)}
+.big-number{font:600 44px "JetBrains Mono";letter-spacing:-.05em;color:var(--white);font-variant-numeric:tabular-nums}.big-number small{font-size:15px;color:var(--muted);letter-spacing:0}
+.stat-card{padding:18px;min-height:115px}.stat-value{font:600 25px "JetBrains Mono";margin-top:9px;color:var(--white);font-variant-numeric:tabular-nums}.stat-note{font-size:12px;color:var(--muted);margin-top:5px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin:28px 0 12px}.section-head h2{font-size:20px}
+.workouts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.workout{min-height:160px;padding:17px;display:flex;flex-direction:column;justify-content:space-between;transition:.2s;border-color:rgba(148,163,184,.16)}
+.workout:hover{transform:translateY(-2px);border-color:rgba(0,229,255,.35);box-shadow:0 0 22px rgba(0,112,243,.12),inset 0 1px rgba(255,255,255,.24)}
+.workout .code{font:700 11px "JetBrains Mono";color:var(--cyan);letter-spacing:.1em}.workout .meta{font:10px "JetBrains Mono";color:var(--dim);margin-top:8px}.workout-title{font-weight:600;line-height:1.25;margin-top:4px}.workout-action{font:10px "JetBrains Mono";color:var(--ice);letter-spacing:.08em}
+.btn{min-height:44px;border-radius:9px;padding:0 15px;border:1px solid rgba(148,163,184,.24);background:linear-gradient(145deg,rgba(31,36,45,.85),rgba(9,11,16,.9));color:var(--white);box-shadow:inset 0 1px rgba(255,255,255,.16),inset 0 -1px rgba(0,0,0,.6);transition:.18s}.btn:hover{border-color:var(--cyan);box-shadow:0 0 15px rgba(0,229,255,.14),inset 0 1px rgba(255,255,255,.24)}.btn.primary{background:linear-gradient(135deg,#093b48,#006078 52%,#062d38);border-color:rgba(0,229,255,.6);color:#fff;box-shadow:0 0 18px rgba(0,229,255,.12),inset 0 1px rgba(255,255,255,.4)}.btn.ghost{background:transparent;color:var(--ice)}.btn.danger{color:#ffb4ab;border-color:rgba(255,107,122,.25)}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
+.nav{position:fixed;z-index:20;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:3px;padding:5px;border:1px solid rgba(148,163,184,.2);border-radius:14px;background:rgba(9,11,16,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 14px 40px rgba(0,0,0,.45),inset 0 1px rgba(255,255,255,.13)}
+.nav button{border:0;background:transparent;color:var(--dim);padding:9px 13px;border-radius:9px;font:10px "JetBrains Mono";letter-spacing:.06em}.nav button.active,.nav button:hover{color:var(--cyan);background:rgba(0,229,255,.07)}
+.back{margin-bottom:14px}.day-head{display:flex;justify-content:space-between;gap:15px;align-items:end;margin-bottom:15px}.day-title{display:flex;align-items:center;gap:10px}.day-code{font:700 12px "JetBrains Mono";color:var(--cyan);padding:7px 8px;border:1px solid rgba(0,229,255,.28);border-radius:6px;background:rgba(0,229,255,.05)}
+.progress-wrap{min-width:190px}.progress-label{display:flex;justify-content:space-between;font:10px "JetBrains Mono";color:var(--muted);margin-bottom:6px}.progress{height:6px;background:#080a0f;border:1px solid #1e293b;border-radius:99px;overflow:hidden}.progress>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 10px rgba(0,229,255,.45);transition:.2s}
+.exercise-list{display:grid;gap:10px}.exercise{padding:15px}.exercise-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:11px}.exercise-name{font-weight:600}.exercise-target{font:10px "JetBrains Mono";color:var(--ice);border:1px solid rgba(56,189,248,.16);padding:5px 7px;border-radius:5px;white-space:nowrap}
+.sets{display:grid;grid-template-columns:28px 1fr 1fr;gap:7px;align-items:center}.set-head{font:9px "JetBrains Mono";color:var(--dim);text-transform:uppercase}.set-no{font:11px "JetBrains Mono";color:var(--dim);text-align:center}.input{width:100%;height:44px;border-radius:7px;border:1px solid #1e293b;background:#080a0f;color:var(--white);padding:0 10px;outline:none;box-shadow:inset 0 2px 5px rgba(0,0,0,.45);font:500 14px "JetBrains Mono";font-variant-numeric:tabular-nums}.input:focus{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(0,229,255,.22),0 0 13px rgba(0,112,243,.18),inset 0 2px 5px rgba(0,0,0,.45)}.input.done{border-color:rgba(110,231,183,.45);box-shadow:inset 0 0 14px rgba(110,231,183,.04)}
+/* FIX BUG 2: save-bar alzata per non finire sotto la nav fixed */
+.save-bar{position:sticky;bottom:64px;margin:14px -1px -1px;padding:12px;border-top:1px solid rgba(148,163,184,.13);background:linear-gradient(180deg,rgba(9,11,16,.72),rgba(9,11,16,.96));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:4}
+.select{height:44px;border-radius:8px;border:1px solid #1e293b;background:#080a0f;color:var(--white);padding:0 11px;min-width:210px;outline:none}.select:focus{border-color:var(--cyan)}
+.chart-wrap{padding:10px 0 0}.chart{width:100%;height:250px;display:block}.analysis-controls{display:flex;gap:8px;flex-wrap:wrap}.metric{font:600 12px "JetBrains Mono";color:var(--white)}.analysis-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.analysis-stat{padding:12px;border:1px solid rgba(148,163,184,.12);background:rgba(4,5,7,.35);border-radius:8px}.analysis-stat .v{font:600 17px "JetBrains Mono";margin-top:5px}.analysis-stat .l{font:9px "JetBrains Mono";color:var(--dim);text-transform:uppercase}
+.body-form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.field label{display:block;font:10px "JetBrains Mono";color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}.field .input{height:46px}.history{margin-top:14px;overflow:auto}.history table{width:100%;border-collapse:collapse;font:11px "JetBrains Mono";min-width:700px}.history th,.history td{text-align:left;padding:10px;border-bottom:1px solid rgba(148,163,184,.08)}.history th{color:var(--dim);font-weight:500}.history td{color:var(--muted)}
+.toast{position:fixed;z-index:50;left:50%;top:18px;transform:translate(-50%,-15px);opacity:0;pointer-events:none;padding:10px 13px;border:1px solid rgba(0,229,255,.35);border-radius:8px;background:rgba(9,11,16,.94);box-shadow:0 0 20px rgba(0,229,255,.12);font:10px "JetBrains Mono";color:var(--cyan);transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+.empty{padding:30px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed rgba(148,163,184,.16);border-radius:10px}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.workouts{grid-template-columns:repeat(2,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.app{padding:12px 12px 90px}.topbar{margin-bottom:15px}.brand-sub{display:none}.panel-pad{padding:16px}.g2,.g3,.g4{grid-template-columns:1fr}.workouts{grid-template-columns:repeat(2,1fr);gap:8px}.workout{min-height:142px;padding:13px}.day-head{display:block}.progress-wrap{margin-top:12px}.analysis-stats{grid-template-columns:repeat(2,1fr)}.body-form{grid-template-columns:repeat(2,1fr)}.nav{width:calc(100% - 24px);justify-content:space-around}.nav button{flex:1;padding:9px 5px}.save-bar{margin-left:-1px;margin-right:-1px;bottom:62px}.sets{grid-template-columns:24px 1fr 1fr}}
+@media(max-width:420px){h1{font-size:30px}.body-form{grid-template-columns:1fr}.workout{min-height:136px}.big-number{font-size:36px}}
+/* FIX: rispetto prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<!-- FIX BUG 8: aria-live per screen reader -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><span>AP</span></div>
+      <div><div class="brand-name">APM-HSPC</div><div class="brand-sub">PERFORMANCE CONSOLE / v2</div></div>
+    </div>
+    <div class="status"><span class="status-dot"></span>SYSTEM NOMINAL</div>
+  </header>
+
+  <main>
+    <section id="home" class="screen active"></section>
+    <section id="picker" class="screen"></section>
+    <section id="stats" class="screen"></section>
+    <section id="body" class="screen"></section>
+    <section id="day" class="screen"></section>
+  </main>
+</div>
+
+<nav class="nav" aria-label="Navigazione">
+  <button type="button" data-screen="home">HOME</button>
+  <button type="button" data-screen="picker">WORKOUT</button>
+  <button type="button" data-screen="stats">ANALISI</button>
+  <button type="button" data-screen="body">BODY</button>
+</nav>
+
+<script>
+"use strict";
+
+const KEYS={
+  history:"apm-hspc-m2:history",
+  profile:"apm-hspc-m2:profile",
+  bodyLive:"apm-hspc-m2:body-live",
+  bodyHistory:"apm-hspc-m2:body-history"
+};
+const DAYS={
+ G1:{title:"Upper Strength + Potenza",short:"UPPER / STRENGTH",cardio:"15′ tapis roulant in salita · 5–8% · 4–5 km/h · 65% FC max",ex:[
+  ["Spinte Inclinate Multipower 30°","4×8–10",4,"rip"],["Croci dal Basso ai Cavi","3×12–15",3,"rip"],["Lat Machine Unilaterale (presa neutra)","4×10/lato",4,"rip"],["Arnold Press (manubri)","3×10",3,"rip"],["Seal Row (manubri, panca piana)","3×10",3,"rip"],["Pushdown Corda","3×10",3,"rip"],["Cable Crunch","3×12–15",3,"rip"]
+ ]},
+ G2:{title:"Lower Strength + Core",short:"LOWER / STRENGTH",cardio:"12′ corda · 30″/30″ · 1×/sett · in sett. B: 15′ bike",ex:[
+  ["Leg Press","4×10",4,"rip"],["Hip Thrust Bilanciere","4×10",4,"rip"],["RDL (manubri)","3×10",3,"rip"],["Leg Extension","3×12",3,"rip"],["Leg Curl Sdraiato / Back Ext.","3×12",3,"rip"],["Cable Hip Abduction","3×15",3,"rip"],["Farmer's Walk","3×25″",3,"sec"]
+ ]},
+ G3:{title:"Upper Volume + Grip Power",short:"UPPER / VOLUME",cardio:"20′ bike · 60% FC max",ex:[
+  ["Chin-up / Lat Machine Inversa","4×10",4,"rip"],["Pike Push-up (piedi rialzati)","4×8–10",4,"rip"],["Meadows Row (Landmine)","3×12–15/lato",3,"rip"],["Pulley Basso (corda, presa neutra)","3×10",3,"rip"],["Rear Delt Fly ai Cavi","4×15",4,"rip"],["Curl inclinato manubri (45°)","3×12–15",3,"rip"],["Russian Twist / Cable Woodchopper","3×15/lato",3,"rip"]
+ ]},
+ G4:{title:"Metabolic Conditioning",short:"METABOLIC / DENSITY",cardio:"15′ camminata · 50% FC max · recupero attivo · no corda",ex:[
+  ["Hack Squat (macchina)","3×10",3,"rip"],["Piegamenti piedi rialzati + zavorra","3×10",3,"rip"],["Chest Supported Row","3×10",3,"rip"],["Seated Leg Curl","3×12",3,"rip"],["Curl a martello (manubri)","3×12",3,"rip"],["Cable Rear Delt Crossover","4×15",4,"rip"],["Plank Laterale / Cable Side Bend","3×30–45″/lato",3,"sec"]
+ ]}
+};
+const BODY_FIELDS=[
+ ["peso","Peso","kg",0,500],["altezza","Altezza","cm",50,250],["torace","Torace","cm",0,250],
+ ["braccioDx","Braccio dx","cm",0,100],["braccioSx","Braccio sx","cm",0,100],["vita","Vita","cm",0,250],
+ ["cosciaDx","Coscia dx","cm",0,150],["cosciaSx","Coscia sx","cm",0,150],["massaGrassa","Massa grassa","%",0,100],
+ ["massaMagra","Massa magra","%",0,100]
+];
+
+let historyCache=null,bodyLiveCache=null,bodyHistoryCache=null,currentDay=null,currentScreen="home";
+const dayCache={},saveTimers={};
+
+const storage={
+ get(key,fallback=null){try{const v=localStorage.getItem(key);return v===null?fallback:JSON.parse(v)}catch(e){return fallback}},
+ set(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(e){return false}},
+ remove(key){try{localStorage.removeItem(key)}catch(e){}}
+};
+
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function num(v){if(v===null||v===undefined||String(v).trim()==="")return null;const n=Number(String(v).replace(",",".").trim());return Number.isFinite(n)?n:null}
+function fmt(n,dec=1){return Number.isFinite(n)?n.toLocaleString("it-IT",{minimumFractionDigits:dec,maximumFractionDigits:dec}):"—"}
+function localIso(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
+function dateIt(s){if(!s)return"—";const p=s.split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s}
+function showToast(message){const t=document.getElementById("toast");t.textContent=message;t.classList.add("show");clearTimeout(showToast.t);showToast.t=setTimeout(()=>t.classList.remove("show"),1900)}
+
+/* FIX BUG 4: sanificazione delle cache da localStorage corrotto */
+function getHistory(){
+  if(!historyCache)historyCache=storage.get(KEYS.history,[]);
+  if(!Array.isArray(historyCache))historyCache=[];
+  return historyCache;
+}
+function getBodyLive(){
+  if(!bodyLiveCache)bodyLiveCache=storage.get(KEYS.bodyLive,{});
+  if(!bodyLiveCache||typeof bodyLiveCache!=="object"||Array.isArray(bodyLiveCache))bodyLiveCache={};
+  return bodyLiveCache;
+}
+function getBodyHistory(){
+  if(!bodyHistoryCache)bodyHistoryCache=storage.get(KEYS.bodyHistory,[]);
+  if(!Array.isArray(bodyHistoryCache))bodyHistoryCache=[];
+  return bodyHistoryCache;
+}
+function saveHistory(){if(!storage.set(KEYS.history,getHistory()))showToast("ERRORE STORAGE")}
+function saveBodyLive(){if(!storage.set(KEYS.bodyLive,getBodyLive()))showToast("ERRORE STORAGE")}
+function sessionKeys(history=getHistory()){return [...new Set(history.map(r=>`${r.date}|${r.day}`).filter(Boolean))]}
+function sessionCount(history=getHistory()){return sessionKeys(history).length}
+function completedSets(dayKey){
+ const state=dayCache[dayKey]||{};
+ return Object.values(state).reduce((a,sets)=>a+Object.values(sets||{}).filter(s=>String(s.kg??"").trim()!==""&&String(s.reps??"").trim()!=="").length,0)
+}
+function totalSets(dayKey){return DAYS[dayKey].ex.reduce((a,e)=>a+e[2],0)}
+function loadDay(dayKey){
+ if(dayCache[dayKey])return dayCache[dayKey];
+ dayCache[dayKey]={};
+ DAYS[dayKey].ex.forEach((e,i)=>{dayCache[dayKey][i]={};for(let s=0;s<e[2];s++)dayCache[dayKey][i][s]={kg:"",reps:""}});
+ const saved=storage.get(`apm-hspc-m2:live:${dayKey}`,null);
+ if(saved&&typeof saved==="object"&&!Array.isArray(saved)){
+  Object.keys(saved).forEach(i=>{if(!dayCache[dayKey][i])dayCache[dayKey][i]={};Object.keys(saved[i]||{}).forEach(s=>{dayCache[dayKey][i][s]={kg:saved[i][s]?.kg??"",reps:saved[i][s]?.reps??""}})});
+ }
+ return dayCache[dayKey];
+}
+function flushDay(dayKey,quiet=false){
+ const ok=storage.set(`apm-hspc-m2:live:${dayKey}`,dayCache[dayKey]||{});
+ if(!quiet&&ok)showToast("LIVE STATE SAVED");
+ return ok;
+}
+function scheduleDaySave(dayKey){
+ clearTimeout(saveTimers[dayKey]);
+ saveTimers[dayKey]=setTimeout(()=>flushDay(dayKey),500);
+}
+function setSetValue(dayKey,ei,si,key,value){
+ loadDay(dayKey)[ei][si][key]=value;
+ scheduleDaySave(dayKey);
+ updateDayProgress(dayKey);
+}
+function updateDayProgress(dayKey){
+ const n=completedSets(dayKey),t=totalSets(dayKey),pct=t?Math.round(n/t*100):0;
+ const bar=document.querySelector("#day .progress > span"),label=document.querySelector("#day .progress-label");
+ if(bar)bar.style.width=pct+"%";
+ if(label)label.innerHTML=`<span>SESSION COMPLETION</span><span>${n}/${t} · ${pct}%</span>`;
+ document.querySelectorAll("#day .input[data-ei]").forEach(i=>{
+  const ei=i.dataset.ei,si=i.dataset.si,st=dayCache[dayKey]?.[ei]?.[si];
+  if(st&&String(st.kg??"").trim()!==""&&String(st.reps??"").trim()!=="")i.classList.add("done");else i.classList.remove("done");
+ });
+}
+
+function renderHome(){
+ const h=getHistory(),sessions=sessionCount(h),today=localIso();
+ const todaySession=h.filter(r=>r.date===today);
+ const recent=[...sessionKeys(h)].sort().reverse().slice(0,1)[0];
+ const last=recent?recent.split("|"):null;
+ const weekStart=new Date();weekStart.setHours(0,0,0,0);const day=(weekStart.getDay()+6)%7;weekStart.setDate(weekStart.getDate()-day);
+ const weekIso=localIso(weekStart);
+ const weekSessions=sessionKeys(h).filter(k=>k.split("|")[0]>=weekIso).length;
+ const lastDay=last?.[1]||"—";
+ document.getElementById("home").innerHTML=`
+ <div class="hero">
+  <div class="panel panel-pad hero-main">
+   <div><div class="eyebrow">HSPC / PERFORMANCE ENGINE</div><h1>Train with data.<br>Perform with intent.</h1><p class="lead">Console di allenamento per registrare carichi, volume, frequenza e progressione senza perdere dati durante la sessione.</p></div>
+   <div class="telemetry"><span class="chip active">LOCAL STORAGE / ONLINE</span><span class="chip">AUTO-SAVE 500MS</span><span class="chip">4-DAY SPLIT</span></div>
+  </div>
+  <div class="panel panel-pad">
+   <div class="eyebrow">CURRENT TELEMETRY</div>
+   <div style="margin-top:22px"><div class="big-number">${weekSessions}<small> sessioni</small></div><div class="stat-note">settimana corrente</div></div>
+   <div style="margin-top:25px"><div class="micro">LAST SESSION</div><div class="metric" style="margin-top:6px">${lastDay!=="—"?esc(lastDay):"NO DATA"} ${last?.[0]?`· ${dateIt(last[0])}`:""}</div></div>
+  </div>
+ </div>
+ <div class="grid g4">
+  <div class="panel stat-card"><div class="eyebrow">TOTAL SESSIONS</div><div class="stat-value">${sessions}</div><div class="stat-note">storiche registrate</div></div>
+  <div class="panel stat-card"><div class="eyebrow">TODAY</div><div class="stat-value">${todaySession.length?todaySession.length:"—"}</div><div class="stat-note">${todaySession.length?"sessione attiva":"nessuna sessione"}</div></div>
+  <div class="panel stat-card"><div class="eyebrow">SPLIT</div><div class="stat-value">G1–G4</div><div class="stat-note">strength / volume / density</div></div>
+  <div class="panel stat-card"><div class="eyebrow">DATA MODE</div><div class="stat-value">LOCAL</div><div class="stat-note">nessun account richiesto</div></div>
+ </div>
+ <div class="section-head"><div><div class="eyebrow">QUICK DEPLOY</div><h2>Seleziona protocollo</h2></div><button class="btn ghost" type="button" onclick="go('picker')">FULL WORKOUT INDEX →</button></div>
+ <div class="workouts">${Object.entries(DAYS).map(([k,d])=>workoutCard(k,d)).join("")}</div>`;
+}
+function workoutCard(k,d){
+ return `<button class="panel workout" type="button" onclick="openDay('${k}')">
+  <div><div class="code">${k}</div><div class="workout-title">${esc(d.title)}</div><div class="meta">${esc(d.short)}</div></div>
+  <div><div class="workout-action">INITIALIZE SESSION →</div></div>
+ </button>`;
+}
+function renderPicker(){
+ document.getElementById("picker").innerHTML=`<div class="section-head"><div><div class="eyebrow">WORKOUT INDEX</div><h2>Protocol library</h2></div></div>
+ <div class="workouts">${Object.entries(DAYS).map(([k,d])=>workoutCard(k,d)).join("")}</div>
+ <div class="panel panel-pad" style="margin-top:14px"><div class="eyebrow">OPERATING RULE</div><p style="margin:9px 0 0;color:var(--muted);line-height:1.6">Compila kg e ripetizioni/secondi per ogni serie realmente eseguita. I campi incompleti non entrano nello storico.</p></div>`;
+}
+function renderDay(dayKey){
+ currentDay=dayKey;const d=DAYS[dayKey],state=loadDay(dayKey),n=completedSets(dayKey),t=totalSets(dayKey),pct=t?Math.round(n/t*100):0;
+ document.getElementById("day").innerHTML=`<button class="btn ghost back" type="button" onclick="go('picker')">← WORKOUT INDEX</button>
+ <div class="day-head"><div><div class="day-title"><span class="day-code">${dayKey}</span><div><div class="eyebrow">${esc(d.short)}</div><h2>${esc(d.title)}</h2></div></div><div class="micro" style="margin-top:8px">CARDIO · ${esc(d.cardio)}</div></div>
+ <div class="progress-wrap"><div class="progress-label"><span>SESSION COMPLETION</span><span>${n}/${t} · ${pct}%</span></div><div class="progress"><span style="width:${pct}%"></span></div></div></div>
+ <div class="exercise-list">${d.ex.map((e,ei)=>`
+  <article class="panel exercise">
+   <div class="exercise-head"><div><div class="eyebrow">MODULE ${String(ei+1).padStart(2,"0")}</div><div class="exercise-name">${esc(e[0])}</div></div><div class="exercise-target">${esc(e[1])}</div></div>
+   <div class="sets"><div class="set-head">SET</div><div class="set-head">KG</div><div class="set-head">${e[3]==="sec"?"SEC":"REPS"}</div>
+   ${Array.from({length:e[2]},(_,si)=>`<div class="set-no">${si+1}</div>
+    <input class="input" aria-label="${esc(e[0])} serie ${si+1} kg" data-ei="${ei}" data-si="${si}" data-key="kg" inputmode="decimal" type="text" placeholder="0" value="${esc(state[ei]?.[si]?.kg??"")}" />
+    <input class="input" aria-label="${esc(e[0])} serie ${si+1} ${e[3]==="sec"?"secondi":"ripetizioni"}" data-ei="${ei}" data-si="${si}" data-key="reps" inputmode="numeric" type="text" placeholder="${e[3]==="sec"?"25":"10"}" value="${esc(state[ei]?.[si]?.reps??"")}" />`).join("")}
+   </div>
+  </article>`).join("")}</div>
+ <div class="panel save-bar"><div><div class="micro">SESSION STATE</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Salvataggio live automatico</div></div><div class="actions"><button class="btn" type="button" onclick="clearDay('${dayKey}')">RESET LIVE</button><button class="btn primary" id="save-session" type="button" onclick="saveSession('${dayKey}')">SAVE SESSION</button></div></div>`;
+ document.querySelectorAll("#day .input").forEach(inp=>inp.addEventListener("input",e=>setSetValue(dayKey,e.target.dataset.ei,e.target.dataset.si,e.target.dataset.key,e.target.value)));
+ /* FIX BUG 1: sincronizza subito stato visivo (bordi verdi) e progress bar */
+ updateDayProgress(dayKey);
+}
+function clearDay(dayKey){if(!confirm("Azzerare i dati live di questa sessione?"))return;delete dayCache[dayKey];storage.remove(`apm-hspc-m2:live:${dayKey}`);renderDay(dayKey);showToast("LIVE STATE RESET")}
+function saveSession(dayKey){
+ const btn=document.getElementById("save-session");if(btn)btn.disabled=true;
+ clearTimeout(saveTimers[dayKey]);flushDay(dayKey,true);
+ const d=DAYS[dayKey],date=localIso(),state=loadDay(dayKey),records=[],invalid=[];
+ d.ex.forEach((e,ei)=>{for(let si=0;si<e[2];si++){
+  const cell=state[ei]?.[si]||{},kgRaw=String(cell.kg??"").trim(),repRaw=String(cell.reps??"").trim();
+  if(!kgRaw&&!repRaw)return;
+  const kg=num(kgRaw),reps=num(repRaw);
+  if(kg===null||kg<0||reps===null||reps<=0){invalid.push(`${ei+1}.${si+1}`);return}
+  records.push({date,day:dayKey,exercise:e[0],exerciseIndex:ei,set:si+1,kg,reps,unit:e[3]});
+ }});
+ if(!records.length){if(btn)btn.disabled=false;showToast("NESSUNA SERIE COMPLETA");return}
+ historyCache=getHistory().filter(r=>!(r.date===date&&r.day===dayKey));
+ historyCache.push(...records);saveHistory();
+ if(btn)btn.disabled=false;
+ showToast(invalid.length?`SESSION SAVED · ${invalid.length} serie ignorate`:"SESSION SAVED · DATA COMMITTED");
+ renderDay(dayKey);
+}
+
+function metricData(dayKey,exerciseIndex){
+ const ex=DAYS[dayKey].ex[exerciseIndex],rows={};
+ getHistory().filter(r=>r.day===dayKey&&r.exercise===ex[0]).forEach(r=>{
+  const key=`${r.date}|${r.day}`;if(!rows[key])rows[key]={date:r.date,maxKg:0,volume:0,maxDuration:0,e1rm:0};
+  const kg=num(r.kg),v=num(r.reps);if(kg===null||v===null)return;
+  rows[key].maxKg=Math.max(rows[key].maxKg,kg);
+  if(ex[3]==="rip"){rows[key].volume+=kg*v;rows[key].e1rm=Math.max(rows[key].e1rm,kg*(1+v/30))}
+  else rows[key].maxDuration=Math.max(rows[key].maxDuration,v);
+ });
+ return Object.values(rows).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function metricOptions(ex){
+ return ex[3]==="sec"
+ ? [["maxKg","Carico max"],["duration","Durata max"]]
+ : [["maxKg","Carico max"],["volume","Volume"],["e1rm","e1RM"]];
+}
+function metricValue(p,m){return m==="volume"?p.volume:m==="e1rm"?p.e1rm:m==="duration"?p.maxDuration:p.maxKg}
+function metricLabel(ex,m){if(m==="volume")return"kg × reps";if(m==="e1rm")return"e1RM stimato";if(m==="duration")return"secondi";return"kg"}
+function metricFormat(v,m){return m==="volume"?fmt(v,0):m==="duration"?fmt(v,0):fmt(v,1)}
+function renderStats(){
+ const h=getHistory(),days=Object.keys(DAYS);
+ document.getElementById("stats").innerHTML=`<div class="section-head"><div><div class="eyebrow">PERFORMANCE ANALYTICS</div><h2>Progressione</h2></div><div class="micro">${sessionCount(h)} SESSIONI TOTALI</div></div>
+ <div class="panel panel-pad"><div class="analysis-controls">
+  <select class="select" id="analysis-day">${days.map(k=>`<option value="${k}">${k} · ${esc(DAYS[k].title)}</option>`).join("")}</select>
+  <select class="select" id="analysis-ex"></select>
+  <select class="select" id="analysis-metric"></select>
+ </div><div id="analysis-content" style="margin-top:15px"></div></div>`;
+ const daySel=document.getElementById("analysis-day"),exSel=document.getElementById("analysis-ex"),metricSel=document.getElementById("analysis-metric");
+ function populate(){
+  const d=DAYS[daySel.value];exSel.innerHTML=d.ex.map((e,i)=>`<option value="${i}">${String(i+1).padStart(2,"0")} · ${esc(e[0])}</option>`).join("");
+  populateMetrics();renderAnalysis();
+ }
+ /* FIX BUG 3: preserva la metrica selezionata quando si cambia esercizio */
+ function populateMetrics(){
+  const ex=DAYS[daySel.value].ex[Number(exSel.value)||0];
+  const prev=metricSel.value;
+  const opts=metricOptions(ex);
+  metricSel.innerHTML=opts.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join("");
+  if(opts.some(o=>o[0]===prev))metricSel.value=prev;
+  else if(ex[3]==="sec")metricSel.value="duration";
+ }
+ daySel.addEventListener("change",populate);exSel.addEventListener("change",()=>{populateMetrics();renderAnalysis()});metricSel.addEventListener("change",renderAnalysis);populate();
+}
+function renderAnalysis(){
+ const day=document.getElementById("analysis-day")?.value;if(!day)return;const ei=Number(document.getElementById("analysis-ex").value||0),m=document.getElementById("analysis-metric").value,ex=DAYS[day].ex[ei],points=metricData(day,ei),content=document.getElementById("analysis-content");
+ if(!points.length){content.innerHTML=`<div class="empty">Nessun dato storico per <strong>${esc(ex[0])}</strong>.</div>`;return}
+ const vals=points.map(p=>metricValue(p,m)),first=vals[0],last=vals[vals.length-1],best=Math.max(...vals),delta=last-first;
+ content.innerHTML=`<div class="analysis-stats">
+  <div class="analysis-stat"><div class="l">SESSIONI</div><div class="v">${points.length}</div></div>
+  <div class="analysis-stat"><div class="l">ULTIMO</div><div class="v">${metricFormat(last,m)} <small>${metricLabel(ex,m)}</small></div></div>
+  <div class="analysis-stat"><div class="l">BEST</div><div class="v">${metricFormat(best,m)} <small>${metricLabel(ex,m)}</small></div></div>
+  <div class="analysis-stat"><div class="l">FIRST → LAST</div><div class="v">${delta>=0?"+":""}${metricFormat(delta,m)}</div></div>
+ </div>
+ <div class="chart-wrap">${makeChart(points,m,ex)}</div>`;
+}
+function makeChart(points,m,ex){
+ const vals=points.map(p=>metricValue(p,m)),w=900,h=250,pad={l:48,r:18,t:22,b:36},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b,min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
+ const pts=vals.map((v,i)=>({x:pad.l+(points.length===1?iw/2:i/(points.length-1)*iw),y:pad.t+(1-(v-min)/range)*ih,v,date:points[i].date}));
+ const poly=pts.map(p=>`${p.x},${p.y}`).join(" "),uid="g"+Math.random().toString(36).slice(2,8);
+ const area=`${pts.map(p=>`${p.x},${p.y}`).join(" ")} ${pts.length?pts[pts.length-1].x+","+(pad.t+ih):""} ${pts.length?pts[0].x+","+(pad.t+ih):""}`;
+ return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Progressione ${esc(ex[0])}">
+  <defs><linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00e5ff" stop-opacity=".25"/><stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/></linearGradient></defs>
+  <line x1="${pad.l}" y1="${pad.t}" x2="${w-pad.r}" y2="${pad.t}" stroke="rgba(148,163,184,.12)"/><line x1="${pad.l}" y1="${pad.t+ih}" x2="${w-pad.r}" y2="${pad.t+ih}" stroke="rgba(148,163,184,.12)"/>
+  <text x="5" y="${pad.t+4}" fill="#64748b" font-family="JetBrains Mono" font-size="10">${esc(metricFormat(max,m))}</text>
+  <text x="5" y="${pad.t+ih}" fill="#64748b" font-family="JetBrains Mono" font-size="10">${esc(metricFormat(min,m))}</text>
+  <polygon points="${area}" fill="url(#${uid})"/>
+  ${pts.length>1?`<polyline points="${poly}" fill="none" stroke="#00e5ff" stroke-width="2"/>`:""}
+  ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#040507" stroke="#00e5ff" stroke-width="2"/><text x="${p.x}" y="${h-12}" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9">${dateIt(p.date).slice(0,5)}</text>`).join("")}
+ </svg>`;
+}
+function renderBody(){
+ const live=getBodyLive(),hist=getBodyHistory();
+ document.getElementById("body").innerHTML=`<div class="section-head"><div><div class="eyebrow">BODY TELEMETRY</div><h2>Composizione e misure</h2></div><div class="micro">${hist.length} RECORD</div></div>
+ <div class="panel panel-pad"><div class="body-form">${BODY_FIELDS.map(f=>`<div class="field"><label for="body-${f[0]}">${esc(f[1])} · ${f[2]}</label><input class="input body-input" id="body-${f[0]}" data-id="${f[0]}" inputmode="decimal" type="text" placeholder="—" value="${esc(live[f[0]]??"")}" /></div>`).join("")}</div>
+ <div class="actions" style="margin-top:15px"><button class="btn primary" type="button" onclick="saveBody()">COMMIT BODY RECORD</button></div></div>
+ <div class="section-head"><div><div class="eyebrow">HISTORY</div><h2>Body records</h2></div></div>
+ <div class="panel panel-pad history">${hist.length?`<table><thead><tr><th>DATA</th>${BODY_FIELDS.map(f=>`<th>${esc(f[1])}</th>`).join("")}</tr></thead><tbody>${[...hist].reverse().map(r=>`<tr><td>${dateIt(r.date)}</td>${BODY_FIELDS.map(f=>`<td>${esc(r[f[0]]??"—")} ${f[2]}</td>`).join("")}</tr>`).join("")}</tbody></table>`:`<div class="empty">Nessun record corporeo.</div>`}</div>`;
+ document.querySelectorAll(".body-input").forEach(i=>i.addEventListener("input",e=>{getBodyLive()[e.target.dataset.id]=e.target.value;saveBodyLive()}));
+}
+function saveBody(){
+ const live=getBodyLive(),record={date:localIso()},errors=[];
+ BODY_FIELDS.forEach(f=>{const raw=String(live[f[0]]??"").trim();if(!raw){record[f[0]]="";return}const n=num(raw);if(n===null||n<f[3]||n>f[4])errors.push(f[1]);else record[f[0]]=n});
+ if(errors.length){showToast("VALORE NON VALIDO: "+errors.slice(0,2).join(", "));return}
+ /* FIX BUG 5: rifiuta record completamente vuoto */
+ if(BODY_FIELDS.every(f=>record[f[0]]==="")){showToast("NESSUN DATO INSERITO");return}
+ bodyHistoryCache=getBodyHistory().filter(r=>r.date!==record.date);bodyHistoryCache.push(record);storage.set(KEYS.bodyHistory,bodyHistoryCache);
+ showToast("BODY RECORD COMMITTED");renderBody();
+}
+function go(screen){
+ currentScreen=screen;document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===screen));
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===screen));
+ if(screen==="home")renderHome();if(screen==="picker")renderPicker();if(screen==="stats")renderStats();if(screen==="body")renderBody();
+}
+function openDay(k){go("day");renderDay(k)}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>go(b.dataset.screen)));
+
+/* FIX BUG 6: flush unificato, chiamato su pagehide E visibilitychange (iOS Safari) */
+function persistAll(){
+ Object.keys(saveTimers).forEach(k=>{clearTimeout(saveTimers[k]);flushDay(k,true)});
+ if(bodyLiveCache)storage.set(KEYS.bodyLive,bodyLiveCache);
+ if(historyCache)storage.set(KEYS.history,historyCache);
+ if(bodyHistoryCache)storage.set(KEYS.bodyHistory,bodyHistoryCache);
+}
+window.addEventListener("pagehide",persistAll);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")persistAll()});
+
+renderHome();
+</script>
+</body>
+</html>
